@@ -1,0 +1,24 @@
+
+{
+  "room": {
+    "id": "room_01",
+    "name": "Smart Space Laboratory",
+    "width_m": 4.0,
+    "length_m": 5.0
+  },
+  "radar": {
+    "id": "radar_01",
+    "model": "HLK-LD2450",
+    "position": {
+      "x_m": 2.0,
+      "y_m": 0.6,
+      "z_m": 0.75
+    },
+    "rotation_deg": 0
+  },
+  "simulation": {
+    "enabled": true,
+    "max_targets": 3,
+    "update_interval_ms": 200
+  }
+}
