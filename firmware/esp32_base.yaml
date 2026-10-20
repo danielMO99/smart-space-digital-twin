@@ -1,0 +1,34 @@
+
+esphome:
+  name: smartspace-esp32
+  friendly_name: Smart Space ESP32
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+logger:
+  level: DEBUG
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+ota:
+  - platform: esphome
+
+# Conexion al broker de la Raspberry
+mqtt:
+  broker: 192.168.1.200
+  port: 1883
+  topic_prefix: smartspace/esp32
+  discovery: false
+
+# Publicacion periodica de un heartbeat
+interval:
+  - interval: 10s
+    then:
+      - mqtt.publish:
+          topic: smartspace/esp32/heartbeat
+          payload: '{"device":"smartspace-esp32","status":"online","radar_connected":false}'

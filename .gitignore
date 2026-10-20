@@ -218,3 +218,11 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# ESPHome secrets and generated files
+firmware/secrets.yaml
+.esphome/
+firmware/.esphome/
+
+# Python virtual environment
+.venv/
