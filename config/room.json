@@ -19,6 +19,6 @@
   "simulation": {
     "enabled": true,
     "max_targets": 3,
-    "update_interval_ms": 200
+    "update_interval_ms": 100
   }
 }
