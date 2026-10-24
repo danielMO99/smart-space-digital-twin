@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Space · Digital Twin</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+  <script type="module" src="/static/js/app.js"></script>
+</head>
+<body>
+  <header><div><p class="eyebrow">SMART SPACE / DIGITAL TWIN</p><h1>La habitación, en tiempo real.</h1></div><p id="connection" role="status" data-state="waiting">Cargando configuración…</p></header>
+  <main>
+    <section class="panel map-panel" aria-labelledby="room-name">
+      <div class="panel-heading"><h2 id="room-name">Plano de habitación</h2><span id="dimensions"></span></div>
+      <svg id="floor" role="img" aria-labelledby="map-title map-description" preserveAspectRatio="xMidYMid meet"><title id="map-title">Plano a escala</title><desc id="map-description">Origen abajo a la izquierda. X aumenta a la derecha e Y hacia arriba. Cuadrícula de un metro.</desc></svg>
+      <p class="muted">Cuadrícula: 1 m · X → · Y ↑ · Coordenadas globales</p>
+      <div class="legend"><span class="radar-key">◆ Radar</span><span class="t1">● Objetivo 1</span><span class="t2">● Objetivo 2</span><span class="t3">● Objetivo 3</span></div>
+    </section>
+    <aside class="panel"><p class="eyebrow" id="source">TELEMETRÍA</p><h2>Objetivos <span id="count">0 / 3</span></h2><div id="targets"></div><p class="muted">Velocidad radial: + se aleja del radar; − se acerca. Los números son slots, no identidades de personas.</p><hr><p>Último timestamp recibido</p><time id="timestamp">Sin datos</time><p id="radar-info" class="muted"></p><p id="notice" role="status"></p></aside>
+  </main>
+</body>
+</html>
