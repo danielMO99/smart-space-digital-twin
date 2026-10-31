@@ -1,3 +1,93 @@
+// -------------------------------------
+// Control de simulación desde el frontend
+// -------------------------------------
+
+const pauseBtn = document.getElementById("pause-btn");
+const resumeBtn = document.getElementById("resume-btn");
+const simulationStatus = document.getElementById("simulation-status");
+
+function updateSimulationControls(paused) {
+  simulationStatus.textContent = paused
+    ? "Simulación pausada"
+    : "Simulación en ejecución";
+
+  pauseBtn.disabled = paused;
+  resumeBtn.disabled = !paused;
+}
+
+let controlBusy = false;
+
+async function loadSimulationStatus() {
+  controlBusy = true;
+  pauseBtn.disabled = resumeBtn.disabled = true;
+  targetCountSelect.disabled = true;
+  try {
+    const response = await fetch("/api/simulation", {cache: "no-store", signal: AbortSignal.timeout(10000)});
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const state = await response.json();
+    updateSimulationControls(state.paused);
+    targetCountSelect.value = String(state.target_count);
+    confirmSpeed(state.speed_factor);
+    speedControlStatus.textContent = "Velocidad confirmada";
+
+  } catch (error) {
+    simulationStatus.textContent =
+      `No se pudo consultar el estado: ${error.message}`;
+    pauseBtn.disabled = resumeBtn.disabled = false;
+    speedControlStatus.textContent = `No se pudo consultar la velocidad: ${error.message}. Selecciona un valor para reintentar.`;
+    speedControlStatus.dataset.state = "error";
+  } finally {
+    controlBusy = false;
+    targetCountSelect.disabled = false;
+    speedSlider.disabled = false;
+  }
+}
+
+async function controlSimulation(action) {
+  if (controlBusy) return;
+  controlBusy = true;
+  pauseBtn.disabled = true;
+  resumeBtn.disabled = true;
+  simulationStatus.textContent = "Enviando orden...";
+
+  try {
+    const response = await fetch(
+      `/api/simulation/${action}`,
+      {
+        method: "POST", signal: AbortSignal.timeout(10000)
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    updateSimulationControls(result.paused);
+
+  } catch (error) {
+    simulationStatus.textContent =
+      `Error al controlar la simulación: ${error.message}`;
+
+    pauseBtn.disabled = false;
+    resumeBtn.disabled = false;
+  } finally {
+    controlBusy = false;
+  }
+}
+
+pauseBtn.addEventListener("click", () => {
+  controlSimulation("pause");
+});
+
+resumeBtn.addEventListener("click", () => {
+  controlSimulation("resume");
+});
 import { project, signedSpeed, socketUrl, validFrame } from './geometry.mjs';
 const $ = id => document.getElementById(id);
 const colors = ['#6ce5cf', '#ffca76', '#b7a0ff'];
@@ -44,12 +134,36 @@ function setup() {
     slots.push({marker, card, values:card.querySelectorAll('b'), note:card.querySelector('p')});
   }
 }
+
+// Slots que queremos visualizar
+const visibleTargets = new Set([1, 2, 3]);
+
+document.querySelectorAll(".target-visibility")
+  .forEach(checkbox => {
+    checkbox.addEventListener("change", () => {
+      const slot = Number(checkbox.value);
+
+      if (checkbox.checked) {
+        visibleTargets.add(slot);
+      } else {
+        visibleTargets.delete(slot);
+      }
+    });
+  });
+  
 function render(frame) {
   const targets = new Map(frame.targets.map(target => [target.slot, target]));
   slots.forEach(({marker, card, values, note}, index) => {
     const t = targets.get(index+1);
     card.classList.toggle('absent', !t);
-    marker.setAttribute('display', t?.inside_room ? 'inline' : 'none');
+    card.hidden = !visibleTargets.has(index + 1);
+    const isVisible =
+    t?.inside_room && visibleTargets.has(index + 1);
+
+  marker.setAttribute(
+    "display",
+    isVisible ? "inline" : "none"
+  );
     if (t) {
       const [x,y] = project(t.x_m,t.y_m,config.room);
       marker.setAttribute('transform', `translate(${x} ${y})`);
@@ -92,4 +206,145 @@ async function start() {
     config = await response.json(); setup(); connect();
   } catch { status('Error al cargar la habitación', 'error'); $('notice').textContent = 'Comprueba FastAPI y recarga la página.'; }
 }
+
+// --------------------------------------
+// Control del número de objetivos
+// --------------------------------------
+
+const targetCountSelect =
+  document.getElementById("target-count");
+
+const targetControlStatus =
+  document.getElementById("target-control-status");
+
+let targetBusy = false;
+async function setTargetCount(count) {
+  if (targetBusy) return;
+  targetBusy = true;
+  targetCountSelect.disabled = true;
+  targetControlStatus.textContent = "Actualizando objetivos...";
+
+  try {
+    const response = await fetch("/api/simulation/targets", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        count: count
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    targetCountSelect.value = String(result.target_count);
+
+    targetControlStatus.textContent =
+      `${result.target_count} objetivos configurados`;
+
+  } catch (error) {
+    targetControlStatus.textContent =
+      `Error: ${error.message}`;
+
+    // Recuperar el valor real del backend
+    try { await loadTargetCount(); }
+    catch { targetControlStatus.textContent += " No se pudo recuperar el número actual."; }
+
+  } finally {
+    targetBusy = false;
+    targetCountSelect.disabled = false;
+  }
+}
+
+async function loadTargetCount() {
+  const response = await fetch("/api/simulation", {cache: "no-store", signal: AbortSignal.timeout(10000)});
+
+  if (!response.ok) {
+    throw new Error(`Error HTTP ${response.status}`);
+  }
+
+  const state = await response.json();
+
+  targetCountSelect.value = String(state.target_count);
+}
+
+targetCountSelect.addEventListener("change", () => {
+  const count = Number(targetCountSelect.value);
+  setTargetCount(count);
+});
+
+// Mostrar la selección al arrastrar; enviar solo al confirmar el cambio.
+const speedSlider = document.getElementById("simulation-speed");
+const speedValue = document.getElementById("simulation-speed-value");
+const speedControlStatus = document.getElementById("speed-control-status");
+let speedBusy = false;
+let confirmedSpeed = null;
+
+function confirmSpeed(value) {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0 || value > 3) {
+    throw new Error("Velocidad recibida no válida");
+  }
+  confirmedSpeed = value;
+  speedSlider.value = String(value);
+  // El backend también admite factores intermedios: mostrar el valor real.
+  speedValue.textContent = `${value}×`;
+}
+
+speedSlider.addEventListener("input", () => {
+  if (speedBusy) return;
+  speedValue.textContent = `${Number(speedSlider.value)}×`;
+  speedControlStatus.textContent = "Pendiente de aplicar";
+  speedControlStatus.dataset.state = "pending";
+});
+
+async function setSimulationSpeed() {
+  if (speedBusy || speedSlider.disabled) return;
+  const value = Number(speedSlider.value);
+  if (!Number.isFinite(value) || value < 0.5 || value > 3 || !Number.isInteger(value * 2)) return;
+  speedBusy = true;
+  speedSlider.disabled = true;
+  speedControlStatus.textContent = "Actualizando velocidad…";
+  speedControlStatus.dataset.state = "pending";
+  try {
+    const response = await fetch("/api/simulation/speed", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({speed_factor: value}),
+      signal: AbortSignal.timeout(10000)
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const result = await response.json();
+    confirmSpeed(result.speed_factor);
+    speedControlStatus.textContent = "Velocidad confirmada";
+    speedControlStatus.dataset.state = "success";
+  } catch (error) {
+    // Una respuesta perdida puede ocultar un cambio aplicado: consultar de nuevo.
+    let recovered = false;
+    try {
+      const response = await fetch("/api/simulation", {
+        cache: "no-store", signal: AbortSignal.timeout(10000)
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      confirmSpeed((await response.json()).speed_factor);
+      recovered = true;
+    } catch {
+      if (confirmedSpeed !== null) speedSlider.value = String(confirmedSpeed);
+      speedValue.textContent = confirmedSpeed === null ? "—" : `${confirmedSpeed}× (última confirmada)`;
+    }
+    speedControlStatus.textContent = `Error al actualizar la velocidad: ${error.message}. ${recovered ? "Valor actual recuperado." : "Estado actual sin confirmar."} Puedes reintentar.`;
+    speedControlStatus.dataset.state = "error";
+  } finally {
+    speedBusy = false;
+    speedSlider.disabled = false;
+  }
+}
+
+speedSlider.addEventListener("change", setSimulationSpeed);
+
 start();
+loadSimulationStatus();
+

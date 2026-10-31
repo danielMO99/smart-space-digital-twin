@@ -16,7 +16,69 @@
       <p class="muted">Cuadrícula: 1 m · X → · Y ↑ · Coordenadas globales</p>
       <div class="legend"><span class="radar-key">◆ Radar</span><span class="t1">● Objetivo 1</span><span class="t2">● Objetivo 2</span><span class="t3">● Objetivo 3</span></div>
     </section>
-    <aside class="panel"><p class="eyebrow" id="source">TELEMETRÍA</p><h2>Objetivos <span id="count">0 / 3</span></h2><div id="targets"></div><p class="muted">Velocidad radial: + se aleja del radar; − se acerca. Los números son slots, no identidades de personas.</p><hr><p>Último timestamp recibido</p><time id="timestamp">Sin datos</time><p id="radar-info" class="muted"></p><p id="notice" role="status"></p></aside>
+    <aside class="panel"><p class="eyebrow" id="source">TELEMETRÍA</p><h2>Objetivos <span id="count">0 / 3</span></h2><div class="simulation-controls">
+  <h3>Control de simulación</h3>
+
+  <div class="control-buttons">
+    <button id="pause-btn" type="button">
+      ⏸ Pausar
+    </button>
+
+    <button id="resume-btn" type="button">
+      ▶ Reanudar
+    </button>
+  </div>
+
+  <div class="target-selector">
+  <label for="target-count">
+    Número de objetivos simulados
+  </label>
+
+  <div class="visibility-controls">
+  <h3>Objetivos visibles</h3>
+
+  <label>
+    <input type="checkbox" class="target-visibility"
+           value="1" checked>
+    Objetivo 1
+  </label>
+
+  <label>
+    <input type="checkbox" class="target-visibility"
+           value="2" checked>
+    Objetivo 2
+  </label>
+
+  <label>
+    <input type="checkbox" class="target-visibility"
+           value="3" checked>
+    Objetivo 3
+  </label>
+</div>
+
+  <select id="target-count">
+    <option value="0">0 objetivos</option>
+    <option value="1">1 objetivo</option>
+    <option value="2">2 objetivos</option>
+    <option value="3">3 objetivos</option>
+  </select>
+
+  <p id="target-control-status" role="status"></p>
+</div>
+
+  <div class="speed-control">
+    <label for="simulation-speed">Velocidad de simulación</label>
+    <output id="simulation-speed-value" for="simulation-speed">—</output>
+    <input id="simulation-speed" type="range" min="0.5" max="3" step="0.5"
+           value="1" disabled aria-describedby="speed-control-status">
+    <div class="speed-scale" aria-hidden="true"><span>0.5×</span><span>3×</span></div>
+    <p id="speed-control-status" role="status">Consultando velocidad…</p>
+  </div>
+
+  <p id="simulation-status" role="status">
+    Simulación en ejecución
+  </p>
+</div><div id="targets"></div><p class="muted">Velocidad radial: + se aleja del radar; − se acerca. Los números son slots, no identidades de personas.</p><hr><p>Último timestamp recibido</p><time id="timestamp">Sin datos</time><p id="radar-info" class="muted"></p><p id="notice" role="status"></p></aside>
   </main>
 </body>
 </html>

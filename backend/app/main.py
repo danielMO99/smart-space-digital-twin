@@ -39,6 +39,11 @@ class Frame(BaseModel):
             raise ValueError("Duplicate target slots")
         return targets
 
+class TargetCountRequest(BaseModel):
+    count: StrictInt = Field(ge=0, le=3)
+
+class SpeedFactorRequest(BaseModel):
+    speed_factor: float = Field(gt=0, le=3)
 
 def process_frame(raw, config):
     """Validate local measurements and rotate counterclockwise, then translate."""
@@ -71,6 +76,11 @@ class StateHub:
         self.config = config
         self.latest = None
         self.subscribers = set()
+        self.paused = False
+        # Número actual de objetivos simulados
+        self.target_count = config["simulation"]["max_targets"]
+        # Factor de velocidad
+        self.speed_factor = 1.0
 
     def publish(self, raw):
         # Validate before replacing the last known good state.
@@ -84,15 +94,39 @@ class StateHub:
 
 async def simulate(hub):
     loop = asyncio.get_running_loop()
-    start = deadline = loop.time()
-    interval = hub.config["simulation"]["update_interval_ms"] / 1000
+
+    interval = (
+        hub.config["simulation"]["update_interval_ms"] / 1000
+    )
+
+    deadline = loop.time()
+    elapsed = 0.0
+
     while True:
         deadline += interval
-        await asyncio.sleep(max(0, deadline - loop.time()))
-        hub.publish(make_frame(hub.config, loop.time() - start))
+
+        await asyncio.sleep(
+            max(0, deadline - loop.time())
+        )
+
+        if not hub.paused:
+            elapsed += interval * hub.speed_factor
+
+        hub.publish(
+            make_frame(
+                hub.config,
+                elapsed,
+                targets=hub.target_count
+            )
+        )
+
         now = loop.time()
+
         if deadline < now:
-            deadline += math.floor((now - deadline) / interval) * interval
+            deadline += (
+                math.floor((now - deadline) / interval)
+                * interval
+            )
 
 
 def create_app(config_path=None):
@@ -138,6 +172,71 @@ def create_app(config_path=None):
     async def state():
         return app.state.hub.latest
 
+    @app.get("/api/simulation/status")
+    async def simulation_status():
+        paused = app.state.hub.paused
+        return {"status": "paused" if paused else "running", "paused": paused}
+
+    @app.get("/api/simulation")
+    async def get_simulation_status():
+        hub = app.state.hub
+
+        return {
+            "paused": hub.paused,
+            "status": "paused" if hub.paused else "running",
+            "simulation_enabled": hub.config["simulation"]["enabled"],
+            "target_count": hub.target_count,
+            "speed_factor": hub.speed_factor,
+        }
+
+    @app.post("/api/simulation/pause")
+    async def pause_simulation():
+        hub = app.state.hub
+        hub.paused = True
+
+        return {
+            "status": "paused",
+            "paused": hub.paused
+        }
+
+    @app.post("/api/simulation/resume")
+    async def resume_simulation():
+        hub = app.state.hub
+        hub.paused = False
+
+        return {
+            "status": "running",
+            "paused": hub.paused
+        }
+
+    @app.post("/api/simulation/targets")
+    async def set_target_count(request: TargetCountRequest):
+        hub = app.state.hub
+
+        if request.count > hub.config["simulation"]["max_targets"]:
+            return JSONResponse(
+                status_code=422,
+                content={"detail": "Número superior al máximo configurado"}
+            )
+
+        hub.target_count = request.count
+
+        return {
+            "status": "updated",
+            "target_count": hub.target_count
+        }
+
+    @app.post("/api/simulation/speed")
+    async def set_simulation_speed(request: SpeedFactorRequest):
+        hub = app.state.hub
+
+        hub.speed_factor = request.speed_factor
+
+        return {
+            "status": "updated",
+            "speed_factor": hub.speed_factor
+        }
+    
     @app.websocket("/ws")
     async def live(websocket: WebSocket):
         await websocket.accept()
