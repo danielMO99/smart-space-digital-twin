@@ -32,3 +32,60 @@ interval:
       - mqtt.publish:
           topic: smartspace/esp32/heartbeat
           payload: '{"device":"smartspace-esp32","status":"online","radar_connected":false}'
+
+# Comunicación serie ESP32 <-> LD2450
+uart:
+  id: uart_ld2450
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  baud_rate: 256000
+  parity: NONE
+  stop_bits: 1
+  rx_buffer_size: 2048
+
+  debug:
+    direction: RX
+    after:
+      bytes: 32
+    sequence:
+      - lambda: UARTDebug::log_hex(direction, bytes, ' ');
+
+# Radar LD2450
+ld2450:
+  id: ld2450_radar
+  uart_id: uart_ld2450
+
+# Detección de presencia
+binary_sensor:
+  - platform: ld2450
+    ld2450_id: ld2450_radar
+    has_target:
+      name: "Radar presencia"
+
+# Número de objetivos y coordenadas
+sensor:
+  - platform: ld2450
+    ld2450_id: ld2450_radar
+    target_count:
+      name: "Número de objetivos"
+    target_1:
+      x:
+        name: "Objetivo 1 X"
+      y:
+        name: "Objetivo 1 Y"
+      speed:
+        name: "Objetivo 1 velocidad"
+    target_2:
+      x:
+        name: "Objetivo 2 X"
+      y:
+        name: "Objetivo 2 Y"
+      speed:
+        name: "Objetivo 2 velocidad"
+    target_3:
+      x:
+        name: "Objetivo 3 X"
+      y:
+        name: "Objetivo 3 Y"
+      speed:
+        name: "Objetivo 3 velocidad"
