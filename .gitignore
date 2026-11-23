@@ -226,3 +226,4 @@ firmware/.esphome/
 
 # Python virtual environment
 .venv/
+.venv-p0/

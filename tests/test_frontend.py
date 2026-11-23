@@ -1,7 +1,9 @@
 from fastapi.testclient import TestClient
+import pytest
 from backend.app.main import create_app
 
 
+@pytest.mark.integration
 def test_frontend_and_existing_routes():
     with TestClient(create_app()) as client:
         page = client.get('/')

@@ -1,3 +1,6 @@
-fastapi>=0.115,<1
-pydantic>=2.9,<3
-uvicorn[standard]>=0.30,<1
+# Validated baseline: Windows x64, CPython 3.11.9 (see README.md).
+-c constraints-py311-windows.txt
+fastapi==0.161.1
+pydantic==2.14.1
+uvicorn[standard]==0.40.0
+paho-mqtt==2.2.0

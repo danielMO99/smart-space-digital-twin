@@ -10,6 +10,7 @@ from backend.app.main import StateHub, create_app, process_frame
 from simulator.simulate_radar import load_config, make_frame, trajectory
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize("rotation", [0, 90, -45, 180])
 def test_round_trip(rotation):
     config = load_config()
@@ -22,6 +23,7 @@ def test_round_trip(rotation):
         assert target["inside_room"]
 
 
+@pytest.mark.unit
 def test_boundaries_and_units():
     config = load_config()
     raw = make_frame(config, 0)
@@ -34,6 +36,7 @@ def test_boundaries_and_units():
     assert targets[2]["x_m"] == 4.001
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize("change", [
     {"schema_version": 2}, {"schema_version": True}, {"radar_id": "unknown"},
     {"timestamp": "2026-01-01T00:00:00"}, {"targets": [{"slot": 1}]},
@@ -50,6 +53,7 @@ def test_invalid_does_not_replace_state(change):
     assert hub.latest is previous
 
 
+@pytest.mark.unit
 def test_duplicate_and_empty_targets():
     config = load_config()
     raw = make_frame(config, 0)
@@ -60,6 +64,7 @@ def test_duplicate_and_empty_targets():
     assert process_frame(raw, config)["targets"] == []
 
 
+@pytest.mark.unit
 def test_slow_subscriber_keeps_only_latest():
     hub = StateHub(load_config())
     queue = asyncio.Queue(maxsize=1)
@@ -70,6 +75,7 @@ def test_slow_subscriber_keeps_only_latest():
     assert queue.get_nowait() is hub.latest
 
 
+@pytest.mark.integration
 def test_http_websocket_fanout_and_shutdown():
     app = create_app()
     with TestClient(app) as client:
@@ -93,6 +99,7 @@ def test_http_websocket_fanout_and_shutdown():
     assert app.state.producer.cancelled()
 
 
+@pytest.mark.integration
 def test_disabled_simulation(tmp_path):
     config = deepcopy(load_config())
     config["simulation"]["enabled"] = False
