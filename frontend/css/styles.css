@@ -124,3 +124,14 @@
 #replay-banner[hidden] { display: none; }
 #replay-description { color: #ffca76; overflow-wrap: anywhere; }
 #replay-start { padding: 8px 16px; }
+.diagnostics { margin: 1.5rem auto; max-width: 1400px; }
+.diagnostics summary { cursor: pointer; font-weight: 700; padding: .5rem; }
+.diagnostics summary:focus-visible { outline: 2px solid #6ce5cf; }
+.diagnostic-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem; }
+.diagnostic-grid dt { color:#9eb0c4; font-size:.85rem; }
+.diagnostic-grid dd { margin:.3rem 0; overflow-wrap:anywhere; }
+.diagnostic-chart { width:100%; max-height:240px; color:#cddceb; }
+.diagnostic-chart text { fill:currentColor; font-size:12px; }
+.diagnostics[data-state="normal"] > summary { color:#6ce5cf; }
+.diagnostics[data-state="stale"] > summary,.diagnostics[data-state="api-error"] > summary { color:#ffca76; }
+.diagnostics p { overflow-wrap:anywhere; }

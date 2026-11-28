@@ -390,3 +390,7 @@ async function bootstrap() {
 }
 bootstrap();
 
+
+import { mount } from './diagnostics.mjs';
+const stopDiagnostics = mount(document.getElementById('diagnostics'));
+window.addEventListener('pagehide', stopDiagnostics, {once:true});
