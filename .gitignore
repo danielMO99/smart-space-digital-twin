@@ -227,3 +227,42 @@ firmware/.esphome/
 # Python virtual environment
 .venv/
 .venv-p0/
+
+# Local MQTT evidence (keep only small, reviewed fixtures under tests/fixtures).
+/captures/
+*.mqtt.jsonl
+!tests/fixtures/**/*.mqtt.jsonl
+
+# Local evidence, analysis products and extracted tools (not source fixtures)
+/outputs/
+/work/
+/artifacts/
+.venv-*/
+
+# Private environment variants; examples remain publishable
+.env.*
+!.env.example
+!*.env.example
+**/secrets.yaml
+**/secrets.yml
+!**/secrets.example.yaml
+!**/secrets.example.yml
+
+# ESPHome local/backup configurations and generated firmware
+/firmware/*_backup*.yaml
+/firmware/*_backup*.yml
+/firmware/*.bak
+/firmware/*.local.yaml
+/firmware/*.local.yml
+/firmware/*bench*.yaml
+/firmware/*bench*.yml
+/firmware/**/*.bin
+/firmware/**/*.elf
+/firmware/**/*.map
+
+# Evidence must be explicitly reviewed fixtures, regardless of its location
+*.jsonl
+!tests/fixtures/**/*.jsonl
+*.key
+*.p12
+*.pfx
