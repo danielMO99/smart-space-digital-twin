@@ -1,0 +1,599 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Smart Space acquisition diagnostics v1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "service": {
+      "type": "object",
+      "properties": {
+        "producer_failed": {
+          "type": "boolean"
+        },
+        "mqtt_thread_alive": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "callback_errors": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "health_http_status": {
+          "enum": [
+            200,
+            503
+          ]
+        },
+        "status": {
+          "enum": [
+            "ok",
+            "error"
+          ]
+        }
+      },
+      "required": [
+        "producer_failed",
+        "mqtt_thread_alive",
+        "callback_errors",
+        "health_http_status",
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "acquisition": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "schema_version": {
+              "const": 1
+            },
+            "mode": {
+              "enum": [
+                "frames",
+                "legacy"
+              ]
+            },
+            "source": {
+              "enum": [
+                "live",
+                "replay"
+              ]
+            },
+            "time_basis": {
+              "enum": [
+                "backend_monotonic",
+                "virtual_backend_monotonic"
+              ]
+            },
+            "sampled_monotonic_s": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "policy": {
+              "type": "object",
+              "properties": {
+                "frequency_window_s": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "history_window_s": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "warmup_s": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "minimum_hz": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "integrity_threshold": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "minimum_intervals": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "capacity": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "required": [
+                "frequency_window_s",
+                "history_window_s",
+                "warmup_s",
+                "minimum_hz",
+                "integrity_threshold",
+                "minimum_intervals",
+                "capacity"
+              ],
+              "additionalProperties": false
+            },
+            "overall": {
+              "enum": [
+                "disconnected",
+                "stale",
+                "initializing",
+                "integrity_problem",
+                "diagnostic_limited",
+                "frequency_degraded",
+                "observing",
+                "normal"
+              ]
+            },
+            "reasons": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "mqtt": {
+              "type": "object",
+              "properties": {
+                "connected": {
+                  "type": "boolean"
+                },
+                "scope": {
+                  "enum": [
+                    "replay_consumer_to_isolated_broker",
+                    "backend_consumer_to_broker"
+                  ]
+                },
+                "device_connectivity": {
+                  "const": "not_observable"
+                }
+              },
+              "required": [
+                "connected",
+                "scope",
+                "device_connectivity"
+              ],
+              "additionalProperties": false
+            },
+            "source_time_reference": {
+              "enum": [
+                "recorded_esp_processing",
+                "esp_processing",
+                null
+              ]
+            },
+            "freshness": {
+              "type": "object",
+              "properties": {
+                "state": {
+                  "enum": [
+                    "fresh",
+                    "waiting",
+                    "stale",
+                    "disconnected"
+                  ]
+                },
+                "ttl_s": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "last_received_age_s": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                "last_valid_age_s": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "state",
+                "ttl_s",
+                "last_received_age_s",
+                "last_valid_age_s"
+              ],
+              "additionalProperties": false
+            },
+            "integrity": {
+              "type": "object",
+              "properties": {
+                "state": {
+                  "enum": [
+                    "unknown",
+                    "clear",
+                    "issues"
+                  ]
+                },
+                "recent_issue_units": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "counters": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              },
+              "required": [
+                "state",
+                "recent_issue_units",
+                "counters"
+              ],
+              "additionalProperties": false
+            },
+            "frequency": {
+              "type": "object",
+              "properties": {
+                "state": {
+                  "enum": [
+                    "normal",
+                    "degraded",
+                    "observing",
+                    "unavailable",
+                    "unreliable"
+                  ]
+                },
+                "received_hz": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                "accepted_hz": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                "esp_processing_hz": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                "ws_observed_hz": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                "ws_configured_hz": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                "interval_mean_s": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                "interval_stddev_s": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                "interval_p95_s": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                "interval_samples": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "state",
+                "received_hz",
+                "accepted_hz",
+                "esp_processing_hz",
+                "ws_observed_hz",
+                "ws_configured_hz",
+                "interval_mean_s",
+                "interval_stddev_s",
+                "interval_p95_s",
+                "interval_samples"
+              ],
+              "additionalProperties": false
+            },
+            "accepted_messages": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "current_targets": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 3
+            },
+            "occupancy": {
+              "const": "unknown"
+            },
+            "session": {
+              "type": "object",
+              "properties": {
+                "boot_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "last_seq": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1
+                },
+                "last_rx_us": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "boot_id",
+                "last_seq",
+                "last_rx_us"
+              ],
+              "additionalProperties": false
+            },
+            "esp32": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "accumulated": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    },
+                    "baseline": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    },
+                    "observed_increments": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    },
+                    "counter_resets": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "accumulated",
+                    "baseline",
+                    "observed_increments",
+                    "counter_resets"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            },
+            "memory": {
+              "type": "object",
+              "properties": {
+                "events": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "distributions": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "capacity": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "window_complete": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "events",
+                "distributions",
+                "capacity",
+                "window_complete"
+              ],
+              "additionalProperties": false
+            },
+            "history": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "monotonic_s": {
+                    "type": [
+                      "number",
+                      "null"
+                    ],
+                    "minimum": 0
+                  },
+                  "overall": {
+                    "type": "string"
+                  },
+                  "freshness": {
+                    "type": "string"
+                  },
+                  "accepted_hz": {
+                    "type": [
+                      "number",
+                      "null"
+                    ],
+                    "minimum": 0
+                  },
+                  "integrity": {
+                    "enum": [
+                      "unknown",
+                      "clear",
+                      "issues"
+                    ]
+                  },
+                  "targets": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0,
+                    "maximum": 3
+                  }
+                },
+                "required": [
+                  "monotonic_s",
+                  "overall",
+                  "freshness",
+                  "accepted_hz",
+                  "integrity",
+                  "targets"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "schema_version",
+            "mode",
+            "source",
+            "time_basis",
+            "sampled_monotonic_s",
+            "policy",
+            "overall",
+            "reasons",
+            "mqtt",
+            "source_time_reference",
+            "freshness",
+            "integrity",
+            "frequency",
+            "accepted_messages",
+            "current_targets",
+            "occupancy",
+            "session",
+            "esp32",
+            "memory",
+            "history"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "schema_version": {
+              "const": 1
+            },
+            "mode": {
+              "enum": [
+                "simulator",
+                "pending"
+              ]
+            },
+            "source": {
+              "enum": [
+                "simulation",
+                "replay",
+                "live"
+              ]
+            },
+            "overall": {
+              "const": "unavailable"
+            },
+            "reasons": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "mqtt": {
+              "type": "null"
+            },
+            "freshness": {
+              "type": "null"
+            },
+            "integrity": {
+              "type": "null"
+            },
+            "frequency": {
+              "type": "null"
+            },
+            "esp32": {
+              "type": "null"
+            },
+            "session": {
+              "type": "null"
+            },
+            "current_targets": {
+              "type": "null"
+            },
+            "history": {
+              "type": "array",
+              "maxItems": 0
+            }
+          },
+          "required": [
+            "schema_version",
+            "mode",
+            "source",
+            "overall",
+            "reasons",
+            "mqtt",
+            "freshness",
+            "integrity",
+            "frequency",
+            "esp32",
+            "session",
+            "current_targets",
+            "history"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "service",
+    "acquisition"
+  ],
+  "additionalProperties": false
+}

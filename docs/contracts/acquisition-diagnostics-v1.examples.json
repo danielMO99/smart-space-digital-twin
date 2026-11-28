@@ -1,0 +1,656 @@
+[
+  {
+    "scenario": "normal_zero_targets",
+    "evidence": "synthetic_virtual",
+    "response": {
+      "schema_version": 1,
+      "service": {
+        "status": "ok",
+        "producer_failed": false,
+        "mqtt_thread_alive": true,
+        "callback_errors": 0,
+        "health_http_status": 200
+      },
+      "acquisition": {
+        "schema_version": 1,
+        "mode": "frames",
+        "source": "replay",
+        "time_basis": "virtual_backend_monotonic",
+        "sampled_monotonic_s": 20.0,
+        "policy": {
+          "frequency_window_s": 10.0,
+          "history_window_s": 60.0,
+          "warmup_s": 10.0,
+          "minimum_hz": 8.0,
+          "integrity_threshold": 1,
+          "minimum_intervals": 20,
+          "capacity": 8192
+        },
+        "overall": "normal",
+        "reasons": [],
+        "mqtt": {
+          "connected": true,
+          "scope": "replay_consumer_to_isolated_broker",
+          "device_connectivity": "not_observable"
+        },
+        "source_time_reference": "recorded_esp_processing",
+        "freshness": {
+          "state": "fresh",
+          "ttl_s": 2.0,
+          "last_received_age_s": 0.0,
+          "last_valid_age_s": 0.0
+        },
+        "integrity": {
+          "state": "clear",
+          "recent_issue_units": 0,
+          "counters": {
+            "received": 226,
+            "accepted": 226,
+            "invalid": 0,
+            "retained": 0,
+            "unexpected": 0,
+            "duplicate": 0,
+            "conflicting_duplicate": 0,
+            "out_of_order": 0,
+            "clock_regression": 0,
+            "retired_boot": 0,
+            "boot_changes": 0,
+            "sequence_gaps": 0,
+            "missing_sequences": 0
+          }
+        },
+        "frequency": {
+          "state": "normal",
+          "received_hz": 11.3,
+          "accepted_hz": 11.3,
+          "esp_processing_hz": 11.250000497787632,
+          "ws_observed_hz": 11.3,
+          "ws_configured_hz": null,
+          "interval_mean_s": 0.08888888888888889,
+          "interval_stddev_s": 8.29602851851393e-16,
+          "interval_p95_s": 0.08888888888889035,
+          "interval_samples": 112
+        },
+        "accepted_messages": 226,
+        "current_targets": 0,
+        "occupancy": "unknown",
+        "session": {
+          "boot_id": "d421040d-993a-4eb2-9931-c26279ec87cd",
+          "last_seq": 226,
+          "last_rx_us": 20000000
+        },
+        "esp32": {
+          "accumulated": {
+            "invalid_reports": 0,
+            "offline_reports": 0,
+            "decimated_reports": 0,
+            "enqueue_failures": 0,
+            "previous_callback_max_us": 0
+          },
+          "baseline": {
+            "invalid_reports": 0,
+            "offline_reports": 0,
+            "decimated_reports": 0,
+            "enqueue_failures": 0,
+            "previous_callback_max_us": 0
+          },
+          "observed_increments": {
+            "invalid_reports": 0,
+            "offline_reports": 0,
+            "decimated_reports": 0,
+            "enqueue_failures": 0
+          },
+          "counter_resets": 0
+        },
+        "memory": {
+          "events": 226,
+          "distributions": 226,
+          "capacity": 8192,
+          "window_complete": true
+        },
+        "history": [
+          {
+            "monotonic_s": 20.0,
+            "overall": "normal",
+            "freshness": "fresh",
+            "accepted_hz": 11.3,
+            "integrity": "clear",
+            "targets": 0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "scenario": "degraded_frequency",
+    "evidence": "synthetic_virtual",
+    "response": {
+      "schema_version": 1,
+      "service": {
+        "status": "ok",
+        "producer_failed": false,
+        "mqtt_thread_alive": true,
+        "callback_errors": 0,
+        "health_http_status": 200
+      },
+      "acquisition": {
+        "schema_version": 1,
+        "mode": "frames",
+        "source": "replay",
+        "time_basis": "virtual_backend_monotonic",
+        "sampled_monotonic_s": 32.0,
+        "policy": {
+          "frequency_window_s": 10.0,
+          "history_window_s": 60.0,
+          "warmup_s": 10.0,
+          "minimum_hz": 8.0,
+          "integrity_threshold": 1,
+          "minimum_intervals": 20,
+          "capacity": 8192
+        },
+        "overall": "frequency_degraded",
+        "reasons": [
+          "low_acceptance_frequency"
+        ],
+        "mqtt": {
+          "connected": true,
+          "scope": "replay_consumer_to_isolated_broker",
+          "device_connectivity": "not_observable"
+        },
+        "source_time_reference": "recorded_esp_processing",
+        "freshness": {
+          "state": "fresh",
+          "ttl_s": 2.0,
+          "last_received_age_s": 0.0,
+          "last_valid_age_s": 0.0
+        },
+        "integrity": {
+          "state": "clear",
+          "recent_issue_units": 0,
+          "counters": {
+            "received": 238,
+            "accepted": 238,
+            "invalid": 0,
+            "retained": 0,
+            "unexpected": 0,
+            "duplicate": 0,
+            "conflicting_duplicate": 0,
+            "out_of_order": 0,
+            "clock_regression": 0,
+            "retired_boot": 0,
+            "boot_changes": 0,
+            "sequence_gaps": 0,
+            "missing_sequences": 0
+          }
+        },
+        "frequency": {
+          "state": "degraded",
+          "received_hz": 1.0,
+          "accepted_hz": 1.0,
+          "esp_processing_hz": 1.0,
+          "ws_observed_hz": 0.0,
+          "ws_configured_hz": null,
+          "interval_mean_s": 1.0,
+          "interval_stddev_s": 0.0,
+          "interval_p95_s": null,
+          "interval_samples": 9
+        },
+        "accepted_messages": 238,
+        "current_targets": 1,
+        "occupancy": "unknown",
+        "session": {
+          "boot_id": "d421040d-993a-4eb2-9931-c26279ec87cd",
+          "last_seq": 238,
+          "last_rx_us": 32000000
+        },
+        "esp32": {
+          "accumulated": {
+            "invalid_reports": 0,
+            "offline_reports": 0,
+            "decimated_reports": 0,
+            "enqueue_failures": 0,
+            "previous_callback_max_us": 0
+          },
+          "baseline": {
+            "invalid_reports": 0,
+            "offline_reports": 0,
+            "decimated_reports": 0,
+            "enqueue_failures": 0,
+            "previous_callback_max_us": 0
+          },
+          "observed_increments": {
+            "invalid_reports": 0,
+            "offline_reports": 0,
+            "decimated_reports": 0,
+            "enqueue_failures": 0
+          },
+          "counter_resets": 0
+        },
+        "memory": {
+          "events": 238,
+          "distributions": 226,
+          "capacity": 8192,
+          "window_complete": true
+        },
+        "history": [
+          {
+            "monotonic_s": 20.0,
+            "overall": "normal",
+            "freshness": "fresh",
+            "accepted_hz": 11.3,
+            "integrity": "clear",
+            "targets": 0
+          },
+          {
+            "monotonic_s": 32.0,
+            "overall": "frequency_degraded",
+            "freshness": "fresh",
+            "accepted_hz": 1.0,
+            "integrity": "clear",
+            "targets": 1
+          }
+        ]
+      }
+    }
+  },
+  {
+    "scenario": "disconnected",
+    "evidence": "synthetic_virtual",
+    "response": {
+      "schema_version": 1,
+      "service": {
+        "status": "ok",
+        "producer_failed": false,
+        "mqtt_thread_alive": true,
+        "callback_errors": 0,
+        "health_http_status": 503
+      },
+      "acquisition": {
+        "schema_version": 1,
+        "mode": "frames",
+        "source": "replay",
+        "time_basis": "virtual_backend_monotonic",
+        "sampled_monotonic_s": 32.0,
+        "policy": {
+          "frequency_window_s": 10.0,
+          "history_window_s": 60.0,
+          "warmup_s": 10.0,
+          "minimum_hz": 8.0,
+          "integrity_threshold": 1,
+          "minimum_intervals": 20,
+          "capacity": 8192
+        },
+        "overall": "disconnected",
+        "reasons": [
+          "mqtt_disconnected"
+        ],
+        "mqtt": {
+          "connected": false,
+          "scope": "replay_consumer_to_isolated_broker",
+          "device_connectivity": "not_observable"
+        },
+        "source_time_reference": "recorded_esp_processing",
+        "freshness": {
+          "state": "disconnected",
+          "ttl_s": 2.0,
+          "last_received_age_s": 0.0,
+          "last_valid_age_s": 0.0
+        },
+        "integrity": {
+          "state": "clear",
+          "recent_issue_units": 0,
+          "counters": {
+            "received": 238,
+            "accepted": 238,
+            "invalid": 0,
+            "retained": 0,
+            "unexpected": 0,
+            "duplicate": 0,
+            "conflicting_duplicate": 0,
+            "out_of_order": 0,
+            "clock_regression": 0,
+            "retired_boot": 0,
+            "boot_changes": 0,
+            "sequence_gaps": 0,
+            "missing_sequences": 0
+          }
+        },
+        "frequency": {
+          "state": "observing",
+          "received_hz": 1.0,
+          "accepted_hz": 1.0,
+          "esp_processing_hz": 1.0,
+          "ws_observed_hz": 0.0,
+          "ws_configured_hz": null,
+          "interval_mean_s": 1.0,
+          "interval_stddev_s": 0.0,
+          "interval_p95_s": null,
+          "interval_samples": 9
+        },
+        "accepted_messages": 238,
+        "current_targets": null,
+        "occupancy": "unknown",
+        "session": {
+          "boot_id": "d421040d-993a-4eb2-9931-c26279ec87cd",
+          "last_seq": 238,
+          "last_rx_us": 32000000
+        },
+        "esp32": {
+          "accumulated": {
+            "invalid_reports": 0,
+            "offline_reports": 0,
+            "decimated_reports": 0,
+            "enqueue_failures": 0,
+            "previous_callback_max_us": 0
+          },
+          "baseline": {
+            "invalid_reports": 0,
+            "offline_reports": 0,
+            "decimated_reports": 0,
+            "enqueue_failures": 0,
+            "previous_callback_max_us": 0
+          },
+          "observed_increments": {
+            "invalid_reports": 0,
+            "offline_reports": 0,
+            "decimated_reports": 0,
+            "enqueue_failures": 0
+          },
+          "counter_resets": 0
+        },
+        "memory": {
+          "events": 238,
+          "distributions": 226,
+          "capacity": 8192,
+          "window_complete": true
+        },
+        "history": [
+          {
+            "monotonic_s": 20.0,
+            "overall": "normal",
+            "freshness": "fresh",
+            "accepted_hz": 11.3,
+            "integrity": "clear",
+            "targets": 0
+          },
+          {
+            "monotonic_s": 32.0,
+            "overall": "frequency_degraded",
+            "freshness": "fresh",
+            "accepted_hz": 1.0,
+            "integrity": "clear",
+            "targets": 1
+          }
+        ]
+      }
+    }
+  },
+  {
+    "scenario": "recovery_observing",
+    "evidence": "synthetic_virtual",
+    "response": {
+      "schema_version": 1,
+      "service": {
+        "status": "ok",
+        "producer_failed": false,
+        "mqtt_thread_alive": true,
+        "callback_errors": 0,
+        "health_http_status": 200
+      },
+      "acquisition": {
+        "schema_version": 1,
+        "mode": "frames",
+        "source": "replay",
+        "time_basis": "virtual_backend_monotonic",
+        "sampled_monotonic_s": 32.1,
+        "policy": {
+          "frequency_window_s": 10.0,
+          "history_window_s": 60.0,
+          "warmup_s": 10.0,
+          "minimum_hz": 8.0,
+          "integrity_threshold": 1,
+          "minimum_intervals": 20,
+          "capacity": 8192
+        },
+        "overall": "observing",
+        "reasons": [],
+        "mqtt": {
+          "connected": true,
+          "scope": "replay_consumer_to_isolated_broker",
+          "device_connectivity": "not_observable"
+        },
+        "source_time_reference": "recorded_esp_processing",
+        "freshness": {
+          "state": "fresh",
+          "ttl_s": 2.0,
+          "last_received_age_s": 0.0,
+          "last_valid_age_s": 0.0
+        },
+        "integrity": {
+          "state": "clear",
+          "recent_issue_units": 0,
+          "counters": {
+            "received": 239,
+            "accepted": 239,
+            "invalid": 0,
+            "retained": 0,
+            "unexpected": 0,
+            "duplicate": 0,
+            "conflicting_duplicate": 0,
+            "out_of_order": 0,
+            "clock_regression": 0,
+            "retired_boot": 0,
+            "boot_changes": 0,
+            "sequence_gaps": 0,
+            "missing_sequences": 0
+          }
+        },
+        "frequency": {
+          "state": "observing",
+          "received_hz": 1.1,
+          "accepted_hz": 1.1,
+          "esp_processing_hz": 1.0891089108910892,
+          "ws_observed_hz": 0.0,
+          "ws_configured_hz": null,
+          "interval_mean_s": 0.9100000000000001,
+          "interval_stddev_s": 0.2699999999999996,
+          "interval_p95_s": null,
+          "interval_samples": 10
+        },
+        "accepted_messages": 239,
+        "current_targets": 1,
+        "occupancy": "unknown",
+        "session": {
+          "boot_id": "d421040d-993a-4eb2-9931-c26279ec87cd",
+          "last_seq": 239,
+          "last_rx_us": 32100000
+        },
+        "esp32": {
+          "accumulated": {
+            "invalid_reports": 0,
+            "offline_reports": 0,
+            "decimated_reports": 0,
+            "enqueue_failures": 0,
+            "previous_callback_max_us": 0
+          },
+          "baseline": {
+            "invalid_reports": 0,
+            "offline_reports": 0,
+            "decimated_reports": 0,
+            "enqueue_failures": 0,
+            "previous_callback_max_us": 0
+          },
+          "observed_increments": {
+            "invalid_reports": 0,
+            "offline_reports": 0,
+            "decimated_reports": 0,
+            "enqueue_failures": 0
+          },
+          "counter_resets": 0
+        },
+        "memory": {
+          "events": 239,
+          "distributions": 226,
+          "capacity": 8192,
+          "window_complete": true
+        },
+        "history": [
+          {
+            "monotonic_s": 20.0,
+            "overall": "normal",
+            "freshness": "fresh",
+            "accepted_hz": 11.3,
+            "integrity": "clear",
+            "targets": 0
+          },
+          {
+            "monotonic_s": 32.0,
+            "overall": "frequency_degraded",
+            "freshness": "fresh",
+            "accepted_hz": 1.0,
+            "integrity": "clear",
+            "targets": 1
+          }
+        ]
+      }
+    }
+  },
+  {
+    "scenario": "recovery_normal",
+    "evidence": "synthetic_virtual",
+    "response": {
+      "schema_version": 1,
+      "service": {
+        "status": "ok",
+        "producer_failed": false,
+        "mqtt_thread_alive": true,
+        "callback_errors": 0,
+        "health_http_status": 200
+      },
+      "acquisition": {
+        "schema_version": 1,
+        "mode": "frames",
+        "source": "replay",
+        "time_basis": "virtual_backend_monotonic",
+        "sampled_monotonic_s": 43.29999999999996,
+        "policy": {
+          "frequency_window_s": 10.0,
+          "history_window_s": 60.0,
+          "warmup_s": 10.0,
+          "minimum_hz": 8.0,
+          "integrity_threshold": 1,
+          "minimum_intervals": 20,
+          "capacity": 8192
+        },
+        "overall": "normal",
+        "reasons": [],
+        "mqtt": {
+          "connected": true,
+          "scope": "replay_consumer_to_isolated_broker",
+          "device_connectivity": "not_observable"
+        },
+        "source_time_reference": "recorded_esp_processing",
+        "freshness": {
+          "state": "fresh",
+          "ttl_s": 2.0,
+          "last_received_age_s": 0.0,
+          "last_valid_age_s": 0.0
+        },
+        "integrity": {
+          "state": "clear",
+          "recent_issue_units": 0,
+          "counters": {
+            "received": 365,
+            "accepted": 365,
+            "invalid": 0,
+            "retained": 0,
+            "unexpected": 0,
+            "duplicate": 0,
+            "conflicting_duplicate": 0,
+            "out_of_order": 0,
+            "clock_regression": 0,
+            "retired_boot": 0,
+            "boot_changes": 0,
+            "sequence_gaps": 0,
+            "missing_sequences": 0
+          }
+        },
+        "frequency": {
+          "state": "normal",
+          "received_hz": 11.3,
+          "accepted_hz": 11.3,
+          "esp_processing_hz": 11.250000497787632,
+          "ws_observed_hz": 0.0,
+          "ws_configured_hz": null,
+          "interval_mean_s": 0.08888888888888857,
+          "interval_stddev_s": 0.0,
+          "interval_p95_s": 0.08888888888888857,
+          "interval_samples": 112
+        },
+        "accepted_messages": 365,
+        "current_targets": 1,
+        "occupancy": "unknown",
+        "session": {
+          "boot_id": "d421040d-993a-4eb2-9931-c26279ec87cd",
+          "last_seq": 365,
+          "last_rx_us": 43300000
+        },
+        "esp32": {
+          "accumulated": {
+            "invalid_reports": 0,
+            "offline_reports": 0,
+            "decimated_reports": 0,
+            "enqueue_failures": 0,
+            "previous_callback_max_us": 0
+          },
+          "baseline": {
+            "invalid_reports": 0,
+            "offline_reports": 0,
+            "decimated_reports": 0,
+            "enqueue_failures": 0,
+            "previous_callback_max_us": 0
+          },
+          "observed_increments": {
+            "invalid_reports": 0,
+            "offline_reports": 0,
+            "decimated_reports": 0,
+            "enqueue_failures": 0
+          },
+          "counter_resets": 0
+        },
+        "memory": {
+          "events": 365,
+          "distributions": 226,
+          "capacity": 8192,
+          "window_complete": true
+        },
+        "history": [
+          {
+            "monotonic_s": 20.0,
+            "overall": "normal",
+            "freshness": "fresh",
+            "accepted_hz": 11.3,
+            "integrity": "clear",
+            "targets": 0
+          },
+          {
+            "monotonic_s": 32.0,
+            "overall": "frequency_degraded",
+            "freshness": "fresh",
+            "accepted_hz": 1.0,
+            "integrity": "clear",
+            "targets": 1
+          },
+          {
+            "monotonic_s": 43.29999999999996,
+            "overall": "normal",
+            "freshness": "fresh",
+            "accepted_hz": 11.3,
+            "integrity": "clear",
+            "targets": 1
+          }
+        ]
+      }
+    }
+  }
+]

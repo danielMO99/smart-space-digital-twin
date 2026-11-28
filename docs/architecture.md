@@ -1,3 +1,5 @@
+> Documento de arquitectura objetivo e historia. No acredita despliegues ni que todas las capas esten implementadas. Para el estado consolidado P1.2a, consultar README.md, frame-backend-p11c4.md y sensor-health-p12a.md.
+
 # Smart Space Digital Twin — System Architecture
 
 **Version:** 0.1  

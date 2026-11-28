@@ -1,0 +1,205 @@
+{
+  "$defs": {
+    "Diagnostics": {
+      "additionalProperties": false,
+      "properties": {
+        "invalid_reports": {
+          "minimum": 0,
+          "title": "Invalid Reports",
+          "type": "integer"
+        },
+        "offline_reports": {
+          "minimum": 0,
+          "title": "Offline Reports",
+          "type": "integer"
+        },
+        "decimated_reports": {
+          "minimum": 0,
+          "title": "Decimated Reports",
+          "type": "integer"
+        },
+        "enqueue_failures": {
+          "minimum": 0,
+          "title": "Enqueue Failures",
+          "type": "integer"
+        },
+        "previous_callback_max_us": {
+          "minimum": 0,
+          "title": "Previous Callback Max Us",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "invalid_reports",
+        "offline_reports",
+        "decimated_reports",
+        "enqueue_failures",
+        "previous_callback_max_us"
+      ],
+      "title": "Diagnostics",
+      "type": "object"
+    },
+    "Slot": {
+      "additionalProperties": false,
+      "properties": {
+        "slot": {
+          "maximum": 3,
+          "minimum": 1,
+          "title": "Slot",
+          "type": "integer"
+        },
+        "x_mm": {
+          "anyOf": [
+            {
+              "maximum": 32767,
+              "minimum": -32767,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "X Mm"
+        },
+        "y_mm": {
+          "anyOf": [
+            {
+              "maximum": 32767,
+              "minimum": -32767,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Y Mm"
+        },
+        "speed_mm_s": {
+          "anyOf": [
+            {
+              "maximum": 32767,
+              "minimum": -32768,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Speed Mm S"
+        },
+        "resolution_mm": {
+          "anyOf": [
+            {
+              "maximum": 32767,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Resolution Mm"
+        }
+      },
+      "required": [
+        "slot",
+        "x_mm",
+        "y_mm",
+        "speed_mm_s",
+        "resolution_mm"
+      ],
+      "title": "Slot",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "smartspace.ld2450.frame",
+      "title": "Schema",
+      "type": "string"
+    },
+    "version": {
+      "const": 1,
+      "title": "Version",
+      "type": "integer"
+    },
+    "device": {
+      "const": "smartspace-esp32",
+      "title": "Device",
+      "type": "string"
+    },
+    "boot_id": {
+      "format": "uuid",
+      "title": "Boot Id",
+      "type": "string"
+    },
+    "seq": {
+      "maximum": 18446744073709551615,
+      "minimum": 1,
+      "title": "Seq",
+      "type": "integer"
+    },
+    "rx_us": {
+      "maximum": 9223372036854775807,
+      "minimum": 0,
+      "title": "Rx Us",
+      "type": "integer"
+    },
+    "time_reference": {
+      "const": "esp_processing_monotonic",
+      "title": "Time Reference",
+      "type": "string"
+    },
+    "selected_seq": {
+      "maximum": 18446744073709551615,
+      "minimum": 1,
+      "title": "Selected Seq",
+      "type": "integer"
+    },
+    "min_interval_us": {
+      "maximum": 18446744073709551615,
+      "minimum": 0,
+      "title": "Min Interval Us",
+      "type": "integer"
+    },
+    "targets": {
+      "items": {
+        "type": "integer"
+      },
+      "maxItems": 3,
+      "title": "Targets",
+      "type": "array"
+    },
+    "slots": {
+      "items": {
+        "$ref": "#/$defs/Slot"
+      },
+      "maxItems": 3,
+      "minItems": 3,
+      "title": "Slots",
+      "type": "array"
+    },
+    "diagnostics": {
+      "$ref": "#/$defs/Diagnostics"
+    }
+  },
+  "required": [
+    "schema",
+    "version",
+    "device",
+    "boot_id",
+    "seq",
+    "rx_us",
+    "time_reference",
+    "selected_seq",
+    "min_interval_us",
+    "targets",
+    "slots",
+    "diagnostics"
+  ],
+  "title": "Report",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Additional semantic rules in normalization-p11c1.md: all-null or all-finite slots; targets exactly present slot references; selected_seq <= seq."
+}

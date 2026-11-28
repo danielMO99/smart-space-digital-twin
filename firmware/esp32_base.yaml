@@ -1,7 +1,13 @@
+substitutions:
+  # 0: every decoded report; 200000: at most 5 Hz; 1000000: at most 1 Hz.
+  frame_min_interval_us: "0"
 
 esphome:
   name: smartspace-esp32
   friendly_name: Smart Space ESP32
+  includes:
+    - ld2450_report_core.h
+    - ld2450_report.h
 
 esp32:
   board: esp32dev
@@ -20,6 +26,8 @@ ota:
 
 # Conexion al broker de la Raspberry
 mqtt:
+  id: smartspace_mqtt
+  idf_send_async: true
   broker: 192.168.1.200
   port: 1883
   topic_prefix: smartspace/esp32
@@ -31,7 +39,7 @@ interval:
     then:
       - mqtt.publish:
           topic: smartspace/esp32/heartbeat
-          payload: '{"device":"smartspace-esp32","status":"online","radar_connected":false}'
+          payload: '{"device":"smartspace-esp32","status":"online"}'
 
 # Comunicación serie ESP32 <-> LD2450
 uart:
@@ -43,17 +51,21 @@ uart:
   stop_bits: 1
   rx_buffer_size: 2048
 
-  debug:
-    direction: RX
-    after:
-      bytes: 32
-    sequence:
-      - lambda: UARTDebug::log_hex(direction, bytes, ' ');
-
 # Radar LD2450
 ld2450:
   id: ld2450_radar
   uart_id: uart_ld2450
+  on_data:
+    then:
+      - lambda: |-
+          constexpr uint64_t interval = ${frame_min_interval_us};
+          static smartspace::Reporter reporter;
+          const std::array<smartspace::RawSlot, 3> slots{{
+            {id(radar_1_x).get_raw_state(), id(radar_1_y).get_raw_state(), id(radar_1_speed).get_raw_state(), id(radar_1_resolution).get_raw_state()},
+            {id(radar_2_x).get_raw_state(), id(radar_2_y).get_raw_state(), id(radar_2_speed).get_raw_state(), id(radar_2_resolution).get_raw_state()},
+            {id(radar_3_x).get_raw_state(), id(radar_3_y).get_raw_state(), id(radar_3_speed).get_raw_state(), id(radar_3_resolution).get_raw_state()}
+          }};
+          reporter.on_data(slots, id(smartspace_mqtt), interval);
 
 # Detección de presencia
 binary_sensor:
@@ -70,22 +82,61 @@ sensor:
       name: "Número de objetivos"
     target_1:
       x:
+        id: radar_1_x
         name: "Objetivo 1 X"
       y:
+        id: radar_1_y
         name: "Objetivo 1 Y"
       speed:
+        id: radar_1_speed
         name: "Objetivo 1 velocidad"
+      resolution:
+        id: radar_1_resolution
+        internal: true
     target_2:
       x:
+        id: radar_2_x
         name: "Objetivo 2 X"
       y:
+        id: radar_2_y
         name: "Objetivo 2 Y"
       speed:
+        id: radar_2_speed
         name: "Objetivo 2 velocidad"
+      resolution:
+        id: radar_2_resolution
+        internal: true
     target_3:
       x:
+        id: radar_3_x
         name: "Objetivo 3 X"
       y:
+        id: radar_3_y
         name: "Objetivo 3 Y"
       speed:
+        id: radar_3_speed
         name: "Objetivo 3 velocidad"
+      resolution:
+        id: radar_3_resolution
+        internal: true
+
+# Control del modo de seguimiento del radar
+switch:
+  - platform: ld2450
+    ld2450_id: ld2450_radar
+    multi_target:
+      name: "Multi Target Tracking"
+    bluetooth:
+      name: "LD2450 Bluetooth"
+
+# Información del firmware del LD2450
+text_sensor:
+  - platform: ld2450
+    ld2450_id: ld2450_radar
+
+    version:
+      id: ld2450_firmware_version
+      name: "LD2450 Firmware"
+
+    mac_address:
+      name: "LD2450 Bluetooth MAC"

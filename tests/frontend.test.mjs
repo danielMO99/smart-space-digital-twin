@@ -26,3 +26,9 @@ test('Accept empty and three slots; reject malformed, duplicate and extra slots'
   assert.ok(validFrame({...frame, targets:[target,{...target,slot:2},{...target,slot:3}]}));
   for (const targets of [[target,target],[null],[{...target,x_m:Infinity}],[{...target,slot:4}]]) assert.equal(validFrame({...frame,targets}),false);
 });
+
+test('Unknown speed is distinct from zero', () => {
+  assert.equal(signedSpeed(null),'Desconocida');
+  assert.notEqual(signedSpeed(null),signedSpeed(0));
+  assert.ok(validFrame({schema_version:1,timestamp:'2020-01-01T00:00:00Z',targets:[{slot:1,x_m:1,y_m:2,speed_m_s:null,inside_room:true}]}));
+});

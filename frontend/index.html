@@ -9,6 +9,11 @@
 </head>
 <body>
   <header><div><p class="eyebrow">SMART SPACE / DIGITAL TWIN</p><h1>La habitación, en tiempo real.</h1></div><p id="connection" role="status" data-state="waiting">Cargando configuración…</p></header>
+  <section id="replay-banner" class="panel" hidden aria-label="Reproducción aislada">
+    <strong>REPRODUCCIÓN AISLADA · SIN RADAR FÍSICO</strong>
+    <p id="replay-description" role="status"></p>
+    <button id="replay-start" type="button">Iniciar reproducción</button>
+  </section>
   <main>
     <section class="panel map-panel" aria-labelledby="room-name">
       <div class="panel-heading"><h2 id="room-name">Plano de habitación</h2><span id="dimensions"></span></div>

@@ -1,167 +1,139 @@
-# smart-space-digital-twin
+# Smart Space Digital Twin
 
-Gemelo digital 2D con la arquitectura ESPHome → MQTT → FastAPI → WebSocket →
-HTML/CSS/JavaScript y SVG. También funciona con un simulador Python, sin ESP32,
-radar ni broker. FastAPI sirve la API y el frontend desde el mismo proceso.
+Gemelo digital 2D: LD2450 → ESP32/ESPHome → MQTT → FastAPI → WebSocket → SVG.
+Estado consolidado hasta **P1.2a**. Funciona también con simulación y replay aislado,
+sin radar, ESP32 ni Raspberry Pi. Un productor y un worker por instancia.
 
-## Base reproducible P0
+## Qué está implementado
 
-Entorno de referencia: **Windows x64, CPython 3.11.9 y Node.js 22.19.0**.
-Node solo es necesario para las pruebas JavaScript; no hay instalación npm ni
-compilación del frontend. Usar un Python 3.11 instalado y ejecutable: una carpeta
-`.venv` no incluye necesariamente el intérprete base al que apunta.
+- Grabación MQTT con bytes originales, importación de informes y replay determinista.
+- Adquisición `legacy` por campos y `frames` por informes completos, sin mezcla automática.
+- Validación, normalización, transformación de coordenadas únicamente en backend.
+- Diagnóstico independiente de conexión, frescura, integridad y frecuencia en `/api/diagnostics`.
+- Frontend SVG y contexto de reproducción; `/health` conserva su contrato anterior.
 
-Las versiones directas están fijadas en `backend/requirements.txt` y
-`backend/requirements-dev.txt`. `backend/constraints-py311-windows.txt` fija
-también las dependencias transitivas de la instalación de referencia. Las
-constraints restringen versiones, pero no instalan paquetes por sí mismas:
-la instalación de ejecución no añade pytest ni HTTPX.
+La precisión física multiobjetivo, comparación UART independiente y calibración siguen
+pendientes. Los controles/textos de simulador que aparecen en modo directo son una
+incidencia de P1.3; no significa que los datos directos se conviertan en simulación.
+No se incluyen P1.2b, P1.3 ni P2.
 
-Se incluye `paho-mqtt` 2.x para la integración LD2450 local previa, cuyo puente
-utiliza `mqtt.CallbackAPIVersion.VERSION2` y se importa también en modo simulador.
-Ese puente y su conexión al backend todavía no forman parte de este incremento
-P0: en una copia que solo contenga este commit, la adquisición es simulada.
-ESPHome se mantiene fuera de estas dependencias: usar un entorno separado para
-firmware y conservar su versión instalada. Este incremento no lo actualiza.
+## Instalación reproducible en Windows
 
-La resolución está validada para el entorno Windows indicado. No es un lock
-multiplataforma: antes de usar Linux/Raspberry u otra versión de Python hay que
-resolver y comprobar sus dependencias específicas, sin desplegar automáticamente.
+Referencia validada: CPython **3.11.9 x64**, Node.js **22.19.0** y Mosquitto **2.1.4 x64**
+para integración MQTT. Node solo ejecuta pruebas; no se necesita npm ni compilar frontend.
+Versiones Python directas fijadas en `backend/requirements*.txt`; constraints transitivas
+para Windows/Python 3.11. No es un lock certificado para Linux/Raspberry u otro Python.
 
-## Instalar en PowerShell
-
-Ejecutar desde la raíz de este repositorio. Comprobar primero los intérpretes:
+Desde la raíz del clon, con Python y Node instalados:
 
 ```powershell
 py -3.11 --version
 node --version
-```
-
-Para un entorno nuevo:
-
-```powershell
 py -3.11 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r backend\requirements-dev.txt
-.\.venv\Scripts\python.exe -m pip check
+$python = Join-Path $PWD '.venv\Scripts\python.exe'
+& $python -m pip install -r backend\requirements-dev.txt
+& $python -m pip check
 ```
 
-Para ejecutar sin herramientas de pruebas, instalar solo
-`backend\requirements.txt`. No hace falta activar el entorno ni cambiar la
-política de ejecución de PowerShell. En VSCode seleccionar su `Scripts\python.exe`.
-La primera instalación necesita acceso al índice de paquetes.
+No sobrescribir un entorno existente: elegir otro nombre si ya se utiliza para ESPHome.
+No copiar entornos virtuales de otra máquina. Solo ejecución: instalar
+`backend/requirements.txt`. ESPHome utiliza un entorno independiente; no forma parte de
+los requisitos del backend. La instalación inicial necesita acceso al índice de paquetes.
 
-Si `py` no encuentra Python o `.venv\Scripts\python.exe --version` falla,
-instalar CPython 3.11 o indicar la ruta de un intérprete funcional:
-
-```powershell
-# Sustituir la ruta por la del Python 3.11 realmente instalado.
-& 'C:\ruta\Python311\python.exe' -m venv .venv-p0
-.\.venv-p0\Scripts\python.exe -m pip install -r backend\requirements-dev.txt
-.\.venv-p0\Scripts\python.exe -m pip check
-```
-
-Crear `.venv-p0` solo si no existe, conservando el entorno anterior (puede contener
-ESPHome). En los comandos siguientes sustituir `.venv` por `.venv-p0` si se usa
-esta alternativa. No versionar entornos virtuales ni copiar `site-packages` desde
-otro entorno para dar por validada una instalación limpia.
-
-## Ejecutar el simulador y el frontend
+## Simulación segura, sin broker
 
 ```powershell
 $env:SMARTSPACE_SOURCE = 'simulator'
-.\.venv\Scripts\python.exe -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --workers 1
+& $python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --workers 1
 ```
 
-Abrir [el frontend](http://127.0.0.1:8000/) o
-[la documentación HTTP](http://127.0.0.1:8000/docs). No abrir el HTML mediante
-`file://`. La configuración actual habilita tres objetivos a intervalos de 100 ms.
-`simulation.enabled` debe ser `true` para generar medidas en este modo.
-
-El backend inicia el simulador; no hace falta otro productor. Mantener **un solo
-worker** porque `StateHub` reside en memoria. `/api/state` entrega la instantánea
-y `/ws` distribuye estados; no recibe adquisición ni comandos.
-
-También se puede ejecutar únicamente el generador de JSON:
+Abrir http://127.0.0.1:8000/; API en `/docs`, instantánea en `/api/state`, estados en
+`/ws`, diagnóstico en `/api/diagnostics`. No abrir el HTML con `file://`.
+`config/room.json` habilita el simulador por defecto. No iniciar otro productor.
 
 ```powershell
-.\.venv\Scripts\python.exe -m simulator.simulate_radar --targets 3 --frames 10
+& $python -m simulator.simulate_radar --targets 3 --frames 10
 ```
 
-## Modo LD2450 local previo (no incluido en P0)
+## Replay completo sin capturas privadas
 
-Este apartado describe los cambios locales de integración anteriores a P0.
-Solo se aplica si están presentes `backend/app/mqtt_consumer.py`,
-`backend/app/radar_bridge.py` y la selección de fuente en `backend/app/main.py`.
-Esos cambios se conservan fuera del commit P0. En un clon que solo contenga P0,
-`SMARTSPACE_SOURCE=ld2450` no habilita adquisición física y se sigue simulando.
-
-Parar primero el servidor del simulador. El modo físico requiere el ESP32/radar
-ya configurado y el broker accesible en la dirección actualmente definida en el
-consumidor MQTT; no se inicia ni configura un broker desde este proyecto.
+Instalar o extraer Mosquitto localmente **sin crear un servicio**. Se requieren
+`mosquitto.exe`, `mosquitto_passwd.exe` y las DLL de la distribución; ver
+[preparación del broker](docs/mqtt-replay.md). Establecer la ruta de esa instalación,
+no una carpeta de trabajo de otra persona:
 
 ```powershell
-$env:SMARTSPACE_SOURCE = 'ld2450'
-.\.venv\Scripts\python.exe -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --workers 1
+$mosquitto = Read-Host 'Ruta completa a mosquitto.exe'
+if (-not (Test-Path -LiteralPath $mosquitto -PathType Leaf)) { throw 'Mosquitto no encontrado' }
+$run = Join-Path $PWD ('outputs\replay-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
+New-Item -ItemType Directory -Path $run | Out-Null
+& $python -m mqtt_capture.import_frames --input tests/fixtures/frame_reports/display.synthetic.jsonl --output "$run/display.import.jsonl" --evidence-kind synthetic
+& $python -m mqtt_capture.diagnose --input "$run/display.import.jsonl"
+& $python -m mqtt_capture.replay_app --input "$run/display.import.jsonl" --mosquitto $mosquitto --acquisition frames --allow-unknown-retain --speed 0.5 --field-ttl 5 --ws-hz 10 --manual-start --http-port 8001
 ```
 
-La dirección, el puerto y los topics siguen definidos en el código existente.
-No hay carga automática de `.env`; `.env.example` y `docker-compose.yml` siguen
-siendo archivos vacíos, no procedimientos de instalación. Este P0 no certifica
-la coherencia de medidas, la detección múltiple ni la salud del sensor real.
-
-## Pruebas sin broker ni hardware (por defecto)
+Abrir http://127.0.0.1:8001/ e iniciar la reproducción. Fixture **sintética**:
+0→1→slots 1+3→3→0→silencio→1. TTL 5 y velocidad 0,5 facilitan la inspección;
+el TTL funcional predeterminado sigue siendo 2 s. El lanzador crea su propio broker
+en loopback, con credenciales efímeras y puerto aleatorio; publica sin retain.
+Ctrl+C cierra la aplicación y el broker. En otra terminal:
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest -q
+Invoke-RestMethod 'http://127.0.0.1:8001/api/diagnostics' | ConvertTo-Json -Depth 12
+```
+
+Para legacy se puede usar `tests/fixtures/mqtt_replay/display_hold.synthetic.mqtt.jsonl`
+con `--acquisition legacy`. Los generadores, tests y fixtures necesarias se incluyen;
+las capturas físicas y los resultados locales se excluyen deliberadamente.
+
+## Pruebas
+
+```powershell
+& $python -m pytest -q
 node --test tests/frontend.test.mjs
+$env:SMARTSPACE_TEST_MOSQUITTO = $mosquitto
+& $python -m pytest -m mqtt -q
 git diff --check
 ```
 
-La suite Python local se fuerza a `SMARTSPACE_SOURCE=simulator`, aunque la terminal
-tenga exportado `ld2450`. Además, cualquier intento de conexión Paho MQTT desde
-una prueba local falla inmediatamente. No se arranca Uvicorn ni un servidor
-externo: las pruebas HTTP/WebSocket usan `TestClient` en memoria.
+Por defecto pytest excluye `mqtt` y `hardware`, fuerza simulación y prohíbe conectar
+Paho en pruebas locales. HTTP/WebSocket usan TestClient en memoria. La compilación
+C++ opcional usa `SMARTSPACE_XTENSA_CXX`; los tests de capturas reales usan
+`SMARTSPACE_REPLAY_CAPTURE` y `SMARTSPACE_FRAME_CAPTURES`. En un clon público sin
+esos recursos se omiten explícitamente; no es una regresión ni una validación física.
+No hay pruebas de hardware implementadas: seleccionar solo esa marca devuelve código 5.
+El aviso Starlette/httpx es conocido; no se oculta ni cambia dependencias en esta auditoría.
 
-| Marca pytest | Alcance | Selección |
-| --- | --- | --- |
-| `unit` | Transformaciones, validación y StateHub en memoria | `python -m pytest -q -m unit` |
-| `integration` | API, WebSocket y recursos frontend en proceso | `python -m pytest -q -m integration` |
-| `mqtt` | Futuras pruebas con broker aislado | `python -m pytest -q -m "mqtt and not hardware"` |
-| `hardware` | Futuras pruebas con ESP32/radar real | `python -m pytest -q -m hardware` |
+## Hardware y configuración privada
 
-`pytest.ini` excluye `mqtt` y `hardware` por defecto y rechaza marcas desconocidas.
-Actualmente hay 14 casos unitarios y 3 de integración local, más 4 JavaScript.
-**Todavía no existen pruebas MQTT o de hardware**: sus selecciones no recogen
-casos y pytest devuelve código 5; esto no equivale a una validación satisfactoria.
+El modo directo existe (`SMARTSPACE_SOURCE=ld2450`, `SMARTSPACE_ACQUISITION=frames|legacy`),
+pero **no es portátil sin configurar**: el consumidor y el YAML actual contienen
+la dirección del banco original. No arrancarlo para comprobar una instalación nueva.
+No hay carga automática de `.env`; `.env.example` y `docker-compose.yml` son placeholders
+vacíos, no un despliegue funcional.
 
-Con la base fijada, Starlette emite un aviso de deprecación por el uso de HTTPX
-en `TestClient`. Las pruebas pasan; el aviso no se oculta. La migración de ese
-cliente de pruebas queda pendiente de una actualización de dependencias separada.
+`firmware/esp32_base.yaml` requiere ambos headers `ld2450_report*.h` y un archivo local
+`firmware/secrets.yaml`. Se ofrece `firmware/secrets.example.yaml` con placeholders;
+copiarlo solo si el destino no existe y rellenarlo localmente. ESPHome validado en el
+incremento de firmware: **2026.6.5**. No se garantiza compilar con otra versión.
 
-Al añadir pruebas externas, marcarlas explícitamente (`mqtt`, `hardware`, o ambas)
-y adquirir conexiones/dispositivos en fixtures, nunca al importar un módulo.
-Configurar un broker aislado antes de seleccionarlas. No mezclar los marcadores
-locales `unit`/`integration` con los externos. Las pruebas JavaScript existentes
-solo cubren funciones puras, no interacciones de navegador.
+El YAML actual habilita OTA sin contraseña configurada y MQTT sin autenticación/TLS
+configurados. Es configuración de laboratorio, **no una plantilla segura para desplegar**.
+La publicación del código no corrige esto. No flashear, desplegar ni modificar seguridad
+como parte de una comprobación de instalación. Véase la auditoría para riesgos pendientes.
 
-Para comprobar el aislamiento frente a una terminal configurada para el radar:
+## Documentación actual e histórica
 
-```powershell
-$env:SMARTSPACE_SOURCE = 'ld2450'
-.\.venv\Scripts\python.exe -m pytest -q
-$env:SMARTSPACE_SOURCE = 'simulator'
-```
+- [Contrato y normalización legacy P1.1b](docs/normalization-p11b.md).
+- [Ensayos físicos y sus limitaciones](docs/physical-validation-p11c2.md).
+- [Grabación/importación/replay de informes](docs/frame-capture-replay-p11c3.md).
+- [Backend frames P1.1c.4](docs/frame-backend-p11c4.md).
+- [Diagnóstico P1.2a, contrato y ejemplos](docs/sensor-health-p12a.md).
+- [Auditoría y preparación para GitHub](docs/repository-audit.md).
 
-## Actualizar la base de dependencias
-
-Actualizar las versiones directas de forma deliberada. Resolverlas en un entorno
-Windows/Python 3.11 limpio y regenerar las constraints a partir de `python -m pip
-freeze` de ese entorno, sin incorporar ESPHome ni herramientas ajenas al backend.
-Al cambiar versiones, retirar temporalmente la referencia a las constraints
-anteriores para resolver las nuevas y restaurarla después de regenerarlas.
-
-Comprobar `pip check`, instalar de nuevo desde los archivos resultantes en un
-segundo entorno limpio y ejecutar las pruebas locales antes de aceptar el cambio.
-Un resultado local correcto no valida broker, radar, temporización física ni
-despliegue. Las guías de fases en `docs/` conservan contexto histórico; este README
-es la referencia de instalación y selección de pruebas para P0.
+Las guías por incremento conservan resultados y comandos del banco original, incluidas
+rutas locales que **no deben copiarse literalmente** a otra máquina. Este README es la
+entrada portable actual. `docs/architecture.md`, requisitos y guías de fases tempranas
+incluyen diseño objetivo e historia, no acreditan despliegues o funcionalidades futuras.
+No publicar `captures/`, `outputs/`, entornos, backups ni secretos. Las fixtures sintéticas
+sí se versionan. Consultar AGENTS.md antes de continuar el desarrollo.

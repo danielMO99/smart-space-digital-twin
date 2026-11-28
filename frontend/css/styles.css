@@ -119,3 +119,8 @@
 .speed-scale, #speed-control-status { font-size: .85rem; color: #9eb0c4; }
 #speed-control-status { min-height: 1em; margin: 0; }
 #speed-control-status[data-state="error"] { color: #ffc680; }
+
+#replay-banner { border-color: #c89e48; margin-bottom: 20px; }
+#replay-banner[hidden] { display: none; }
+#replay-description { color: #ffca76; overflow-wrap: anywhere; }
+#replay-start { padding: 8px 16px; }

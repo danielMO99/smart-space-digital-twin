@@ -94,6 +94,7 @@ const colors = ['#6ce5cf', '#ffca76', '#b7a0ff'];
 const svg = $('floor');
 const slots = [];
 let config, socket, retry, stopped = false, delay = 1000, lastArrival = 0;
+let runtimeMode = 'simulator';
 function status(text, state) { $('connection').textContent = text; $('connection').dataset.state = state; document.body.classList.toggle('stale', state !== 'live'); }
 function node(tag, attrs, parent = svg, text) {
   const element = document.createElementNS('http://www.w3.org/2000/svg', tag);
@@ -109,6 +110,7 @@ function setup() {
   $('dimensions').textContent = `${room.width_m} × ${room.length_m} m`;
   $('radar-info').textContent = `Radar ${radar.model} · (${radar.position.x_m}, ${radar.position.y_m}) m`;
   $('source').textContent = config.simulation.enabled ? 'FUENTE / SIMULADOR' : 'FUENTE / EN ESPERA';
+  if (runtimeMode === 'replay') $('source').textContent = 'FUENTE / REPRODUCCIÓN MQTT';
   node('rect', {width:w, height:h, fill:'#0b1625', stroke:'#68819a', 'stroke-width':2});
   for (let x = 0; x <= room.width_m; x++) {
     node('line', {x1:x*100, x2:x*100, y1:0, y2:h, stroke:'#263b51'});
@@ -169,7 +171,7 @@ function render(frame) {
       marker.setAttribute('transform', `translate(${x} ${y})`);
       values[0].textContent = `${t.x_m.toFixed(2)} m`; values[1].textContent = `${t.y_m.toFixed(2)} m`; values[2].textContent = signedSpeed(t.speed_m_s);
       note.textContent = t.inside_room ? 'Dentro de la habitación' : 'Fuera de la habitación · no representado';
-    } else { values.forEach(v => v.textContent = '—'); note.textContent = 'Sin detección'; }
+    } else { values.forEach(v => v.textContent = '—'); note.textContent = frame.acquisition ? (frame.acquisition.telemetry_status === 'fresh' ? 'Sin objetivo en el informe' : 'Sin datos válidos recientes') : 'Sin detección'; }
   });
   $('count').textContent = `${frame.targets.length} / 3`;
   $('timestamp').textContent = frame.timestamp;
@@ -185,7 +187,12 @@ function connect() {
       const frame = JSON.parse(event.data);
       if (!validFrame(frame) || frame.radar_id !== config.radar.id) throw new Error('Trama inválida');
       render(frame); lastArrival = performance.now(); delay = 1000;
-      $('notice').textContent = ''; status('Conectado · en directo', 'live');
+      $('notice').textContent = frame.acquisition
+        ? (frame.acquisition.telemetry_status === 'fresh'
+          ? 'Informe completo del radar; slots sin identidad persistente. Ocupación física no confirmada.'
+          : 'Sin telemetría válida reciente; ocupación desconocida.')
+        : (frame.observation ? 'Posiciones observadas por asociación temporal; ocupación física no confirmada.' : '');
+      status(runtimeMode === 'replay' ? 'Conectado · reproducción' : 'Conectado · en directo', 'live');
     } catch { $('notice').textContent = 'Mensaje inválido descartado.'; }
   };
   socket.onerror = () => socket.close();
@@ -345,6 +352,41 @@ async function setSimulationSpeed() {
 
 speedSlider.addEventListener("change", setSimulationSpeed);
 
-start();
-loadSimulationStatus();
+// Diagnostic context only: keep rendering, stale detection and geometry unchanged.
+async function loadRuntime() {
+  const response = await fetch('/api/runtime', {cache:'no-store', signal:AbortSignal.timeout(10000)});
+  if (!response.ok) throw new Error('Estado operativo no disponible');
+  const runtime = await response.json();
+  runtimeMode = runtime.mode;
+  if (runtimeMode === 'replay') {
+    $('replay-banner').hidden = false;
+    const kind = runtime.evidence_kind === 'synthetic' ? 'FIXTURE SINTÉTICA' : 'CAPTURA REAL REPRODUCIDA';
+    $('replay-description').textContent = `${kind} · ${runtime.capture_name} · ${runtime.speed}× · Estado: ${runtime.phase} · MQTT recibidos: ${runtime.consumer_received} · Errores del consumidor: ${runtime.consumer_errors}`;
+    $('replay-start').disabled = runtime.phase !== 'waiting';
+    for (const id of ['pause-btn', 'resume-btn', 'target-count', 'simulation-speed']) $(id).disabled = true;
+    simulationStatus.textContent = 'Simulador desactivado durante la reproducción.';
+    speedControlStatus.textContent = 'Velocidad de replay configurada al arrancar.';
+  }
+  return runtime;
+}
+$('replay-start').addEventListener('click', async () => {
+  $('replay-start').disabled = true;
+  try {
+    const response = await fetch('/api/replay/start', {method:'POST'});
+    if (!response.ok) throw new Error('No se pudo iniciar');
+    await loadRuntime();
+  } catch { $('replay-description').textContent = 'No se pudo iniciar la reproducción.'; }
+});
+async function bootstrap() {
+  try {
+    await loadRuntime();
+    await start();
+    if (runtimeMode !== 'replay') loadSimulationStatus();
+    else {
+      const runtimePoll = setInterval(() => loadRuntime().catch(() => {}), 1000);
+      window.addEventListener('pagehide', () => clearInterval(runtimePoll), {once:true});
+    }
+  } catch { status('Error al consultar el modo de ejecución', 'error'); }
+}
+bootstrap();
 
